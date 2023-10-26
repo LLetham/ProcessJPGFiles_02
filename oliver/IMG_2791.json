@@ -1,0 +1,37 @@
+{
+  "title": "IMG_2791.PNG",
+  "description": "",
+  "imageViews": "2",
+  "creationTime": {
+    "timestamp": "1550440664",
+    "formatted": "Feb 17, 2019, 9:57:44 PM UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1546584696",
+    "formatted": "Jan 4, 2019, 6:51:36 AM UTC"
+  },
+  "geoData": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "geoDataExif": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "url": "https://lh3.googleusercontent.com/KsqhGDKYH-2KbI1-3m9sQ4GTAOQd1iGGJkB0Jf_H2ECKnIAiQoIkv1MwpxizLEPo_rGuetamw_HSSdL7wAjxFqiykbyUECpQIiiv2Gk",
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceType": "IOS_PHONE"
+    }
+  },
+  "photoLastModifiedTime": {
+    "timestamp": "1660572757",
+    "formatted": "Aug 15, 2022, 2:12:37 PM UTC"
+  }
+}

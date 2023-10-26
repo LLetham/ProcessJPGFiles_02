@@ -1,0 +1,40 @@
+{
+  "title": "IMG_2896.JPG",
+  "description": "",
+  "imageViews": "2",
+  "creationTime": {
+    "timestamp": "1550440808",
+    "formatted": "Feb 17, 2019, 10:00:08 PM UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1547228732",
+    "formatted": "Jan 11, 2019, 5:45:32 PM UTC"
+  },
+  "geoData": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "geoDataExif": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "people": [{
+    "name": "Arya"
+  }],
+  "url": "https://lh3.googleusercontent.com/RyRrO96vOersn3bK8BT_moHNMlmfH5K-xb-OK1h8pBtsU7K8oo1xGZqN03NuBUk7BmGLsd4OTkk8xAeLtGA3h5voMmdbfekokE486pc",
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceType": "IOS_PHONE"
+    }
+  },
+  "photoLastModifiedTime": {
+    "timestamp": "1660562991",
+    "formatted": "Aug 15, 2022, 11:29:51 AM UTC"
+  }
+}

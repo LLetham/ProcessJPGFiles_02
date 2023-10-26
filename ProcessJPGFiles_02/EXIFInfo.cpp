@@ -1,0 +1,1 @@
+#include "EXIFInfo.h"

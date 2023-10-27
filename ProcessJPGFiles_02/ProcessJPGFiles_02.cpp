@@ -16,7 +16,7 @@
 #include <filesystem> // C++17 standard header file name
 #include <sys/stat.h>
 #include "ProcessFilesInDir.h"
-#include "EXIFInfo.h"
+//#include "EXIFInfo.h"
 
 
 
@@ -43,8 +43,8 @@ int main()
 
 
     // Path to the directory
-    directoryPath = "F:\\git_repositories\\ProcessJPGFiles\\oliver";
-    //directoryPath = "C:\\Users\\lletham\\source\\repos\\read_file_names_console_app\\oliver";
+    //directoryPath = "F:\\git_repositories\\ProcessJPGFiles_02\\oliver";
+    directoryPath = "C:\\Users\\lletham\\source\\repos\\ProcessJPGFiles_02\\oliver";
 
 
     // This class will distinguish a file from a directory
@@ -85,45 +85,62 @@ int main()
     // This is where the jpg and png files need to be modified to include the json information
     // here!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-    //// Open input file
-    //ifstream infile;
-    //bool fileOpen = false;
+     // Open input file
+    ifstream infile;
+    //const char jpgIFileName[31] = "0C875ED2-oliver-18664-000.JPEG";
+    //const char jpgIFileName[28] = "01_nat_hist_london_0001.jpg";
+    string jpgIFileName = "0C875ED2-oliver-18664-000.JPEG";
+    bool inFileOpen = false;
 
-    //infile.open(jpgIFileName, ios::binary);
-    //if (infile.is_open()) {
-    //    cout << jpgIFileName << "\texists" << endl;
-    //    fileOpen = true;
-    //}
-    //else {
-    //    cout << jpgIFileName << "\tdoes NOT exist" << endl;
-    //    fileOpen = false;
-    //}
+    infile.open(jpgIFileName, ios::binary);
+    if (infile.is_open()) {
+        cout << jpgIFileName << "\texists" << endl;
+        inFileOpen = true;
+    }
+    else {
+        cout << jpgIFileName << "\tdoes NOT exist" << endl;
+        inFileOpen = false;
+    }
 
-    ////// Open output file
-    ////ofstream outfile;
-    ////bool fileOpen = false;
-    ////outfile.open(jpgOFileName, ios::binary);
-    ////if (outfile.is_open()) {
-    ////    cout << jpgOFileName << "\texists" << endl;
-    ////    fileOpen = true;
-    ////}
-    ////else {
-    ////    cout << jpgOFileName << "\tdoes NOT exist" << endl;
-    ////    fileOpen = false;
-    ////}
+    // Open output file
+    // Name is the same as the input file with "_fixed" apended onto the end
+    ofstream outfile;
+    string jpgOFileName = jpgIFileName;
+    std::string key(".JP");
+    std::size_t found = jpgOFileName.rfind(key);
+    if (found != std::string::npos)
+        jpgOFileName.replace(found, key.length(), "_fixed.jp");
 
-    //// get length of input file
-    //infile.seekg(0, ios::end);
-    //int length = infile.tellg();
-    //infile.seekg(0, ios::beg);
+    bool outFileOpen = false;
+    outfile.open(jpgOFileName, ios::binary);
+    if (outfile.is_open()) {
+        cout << jpgOFileName << "\texists" << endl;
+        outFileOpen = true;
+    }
+    else {
+        cout << jpgOFileName << "\tdoes NOT exist" << endl;
+        outFileOpen = false;
+    }
 
-    ////allocate memory
-    //char* jpgBuffer = new char[length + 1];
+    // get length of input file into length. Return to beginning of file.
+    infile.seekg(0, ios::end);
+    streamoff length = infile.tellg();
+    infile.seekg(0, ios::beg);
+
+    // Put the file  contents into a vector
+    //template < class T, class Alloc = allocator<T> > class vector; // generic template
+    vector<char> jpgVector;
+    vector<char>::iterator it;
+
+    //allocate memory
+    char* jpgBuffer = new char[length + 1];
 
     ////read the data as a block into the buffer then close the file
-    //infile.read(jpgBuffer, length);
+    infile.read(jpgBuffer, length);
+    //jpgVector.assign(&jpgBuffer, &jpgBuffer + length + 1);
     //infile.close();
 
+    // print out jpgVector contents
 
 
 

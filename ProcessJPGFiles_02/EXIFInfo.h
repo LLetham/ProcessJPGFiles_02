@@ -614,7 +614,7 @@ int easyexif::EXIFInfo::parseFrom(unsigned char* buf, unsigned len) {
     if (buf[0] != 0xFF || buf[1] != 0xD8)
         return PARSE_EXIF_ERROR_NO_JPEG;
     else
-        std::cout << "SOI 0xFFD8 found" << std::endl;
+        //std::cout << "SOI 0xFFD8 found" << std::endl;
 
     // Sanity check: some cameras pad the JPEG image with some bytes at the end.
     // Normally, we should be able to find the JPEG end marker 0xFFD9 at the end
@@ -629,8 +629,8 @@ int easyexif::EXIFInfo::parseFrom(unsigned char* buf, unsigned len) {
     while (len > 2) {
         if (buf[len - 1] == 0xD9 && buf[len - 2] == 0xFF)
             break;
-        else
-            std::cout << "EOI 0xFFD9 found" << std::endl;
+        //else
+        //    std::cout << "EOI 0xFFD9 found" << std::endl;
 
         len--;
     }

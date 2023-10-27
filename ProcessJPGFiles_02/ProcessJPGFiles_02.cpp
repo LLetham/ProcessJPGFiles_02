@@ -16,13 +16,15 @@
 #include <filesystem> // C++17 standard header file name
 #include <sys/stat.h>
 #include "ProcessFilesInDir.h"
-//#include "EXIFInfo.h"
+#include "ProcessExif.h"
 
 
 
 #define DEBUG_PrintFilePath 0
 
 namespace fs = std::filesystem;
+ProcessExif pe;
+
 
 using namespace std;
 
@@ -43,8 +45,8 @@ int main()
 
 
     // Path to the directory
-    //directoryPath = "F:\\git_repositories\\ProcessJPGFiles_02\\oliver";
-    directoryPath = "C:\\Users\\lletham\\source\\repos\\ProcessJPGFiles_02\\oliver";
+    directoryPath = "F:\\git_repositories\\ProcessJPGFiles_02\\oliver";
+    //directoryPath = "C:\\Users\\lletham\\source\\repos\\ProcessJPGFiles_02\\oliver";
 
 
     // This class will distinguish a file from a directory
@@ -86,7 +88,8 @@ int main()
     // here!!!!!!!!!!!!!!!!!!!!!!!!!!
 
      // Open input file
-    ifstream infile;
+    //ifstream infile;
+    basic_ifstream<unsigned char> infile;
     //const char jpgIFileName[31] = "0C875ED2-oliver-18664-000.JPEG";
     //const char jpgIFileName[28] = "01_nat_hist_london_0001.jpg";
     string jpgIFileName = "0C875ED2-oliver-18664-000.JPEG";
@@ -104,7 +107,7 @@ int main()
 
     // Open output file
     // Name is the same as the input file with "_fixed" apended onto the end
-    ofstream outfile;
+    basic_ofstream<unsigned char> outfile;
     string jpgOFileName = jpgIFileName;
     std::string key(".JP");
     std::size_t found = jpgOFileName.rfind(key);
@@ -127,23 +130,24 @@ int main()
     streamoff length = infile.tellg();
     infile.seekg(0, ios::beg);
 
-    // Put the file  contents into a vector
-    //template < class T, class Alloc = allocator<T> > class vector; // generic template
-    vector<char> jpgVector;
-    vector<char>::iterator it;
+    //// Put the file  contents into a vector
+    ////template < class T, class Alloc = allocator<T> > class vector; // generic template
+    //vector<char> jpgVector;
+    //vector<char>::iterator it;
 
     //allocate memory
-    char* jpgBuffer = new char[length + 1];
+    unsigned char* jpgBuffer = new unsigned char[length + 1];
 
     ////read the data as a block into the buffer then close the file
     infile.read(jpgBuffer, length);
 
-    //jpgVector.assign(&jpgBuffer, &jpgBuffer + length + 1);
-    //infile.close();
+    //jpgVector.assign(jpgBuffer, jpgBuffer + length + 1);
+    //it = jpgVector.begin();
+    //int addr = it - it;
+    pe.printXBytes(jpgBuffer, 0, 0x4f);
+    infile.close();
 
     // print out jpgVector contents
-
-
 
     ////#define _CRT_SECURE_NO_WARNINGS
 

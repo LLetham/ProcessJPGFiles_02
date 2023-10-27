@@ -1,32 +1,39 @@
 #pragma once
 
-#include <vector>;
+#include <vector>
+#include <stdio.h>
+#include <iostream>
+#include <iomanip>
+
+
+
+using namespace std;
+
 
 class ProcessExif
 {
-//private:
-
-
-//public:
-
-
+private:
     //vector<char>::iterator it;
-    //vector<char> jpgVector;
 
 
-    //void printXBytes(vector<int> buf, unsigned int offs, int numBytes) {
-        //// here!!!!!!!!!!!!!!!!!!!!!!!!
-        //int x = 0;
-        //for (int i = 0; i < numBytes + 1; i++) {
-        //    if (i % 0x10 == 0) printf("%08x: ", offs + i);
-        //    printf("%02X ", buf[offs + i]);
-        //    x++;
-        //    if (x == 0x10) {
-        //        printf("\n");
-        //        x = 0;
-        //    }
-        //}
-    //}
+public:
+
+
+
+
+    void printXBytes(unsigned char* buf, unsigned int offs, int numBytes) {
+        int x = 0;
+        for (int i = 0; i < numBytes + 1; i++) {
+            if (i % 0x10 == 0) printf("%08x: ", offs);
+            printf("%02X ", buf[offs + i]);
+            x++;
+            if (x == 0x10) {
+                printf("\n");
+                x = 0;
+            }
+        }
+    }
+
 
 };
 

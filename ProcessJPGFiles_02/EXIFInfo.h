@@ -1277,19 +1277,19 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, unsigned len) {
     return PARSE_EXIF_SUCCESS;
 }
 
-void easyexif::EXIFInfo::printXBytes(unsigned char* buf, unsigned int offs, int numBytes) {
-    // here!!!!!!!!!!!!!!!!!!!!!!!!
-    int x = 0;
-    for (int i = 0; i < numBytes + 1; i++) {
-        if (i % 0x10 == 0) printf("%08x: ", offs);
-        printf("%02X ", buf[offs + i]);
-        x++;
-        if (x == 0x10) {
-            printf("\n");
-            x = 0;
+    void easyexif::EXIFInfo::printXBytes(unsigned char* buf, unsigned int offs, int numBytes) {
+        // here!!!!!!!!!!!!!!!!!!!!!!!!
+        int x = 0;
+        for (int i = 0; i < numBytes + 1; i++) {
+            if (i % 0x10 == 0) printf("%08x: ", offs);
+            printf("%02X ", buf[offs + i]);
+            x++;
+            if (x == 0x10) {
+                printf("\n");
+                x = 0;
+            }
         }
     }
-}
 
 void easyexif::EXIFInfo::clear() {
     // Strings

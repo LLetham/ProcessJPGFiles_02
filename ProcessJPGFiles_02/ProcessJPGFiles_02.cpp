@@ -89,63 +89,66 @@ int main()
 
      // Open input file
     //ifstream infile;
+    string jpgIFileName = "01_nat_hist_london_0033.jpg";
+    //string jpgIFileName = "01_nat_hist_london_0001.jpg";
+    //string jpgIFileName = "0C875ED2-oliver-18664-000.JPEG";
+    //string jpgIFileName = "guatemala_125222-SL-002.jpg";
+    //string jpgIFileName = "guatemala_125222-SL-003.jpg";
+    //string jpgIFileName = "tanya_20230523_142345.jpg";
+    //string jpgIFileName = "tanya_20230523_142359.jpg";
+    //string jpgIFileName = "tanya_20230523_142415.jpg";
+    //string jpgIFileName = "date_test_data_01.txt";
+
+    
     basic_ifstream<unsigned char> infile;
-    //const char jpgIFileName[31] = "0C875ED2-oliver-18664-000.JPEG";
-    //const char jpgIFileName[28] = "01_nat_hist_london_0001.jpg";
-    string jpgIFileName = "0C875ED2-oliver-18664-000.JPEG";
-    bool inFileOpen = false;
+    unsigned char* jpgBuffer = NULL;
+
+    streamoff length;
 
     infile.open(jpgIFileName, ios::binary);
+
     if (infile.is_open()) {
-        cout << jpgIFileName << "\texists" << endl;
-        inFileOpen = true;
+        cout << "Read file: " << jpgIFileName << "\tfound" << endl;
+
+        // Get file size
+        infile.seekg(0, ios::end);
+        length = infile.tellg();
+        infile.seekg(0, ios::beg);
+
+        //allocate memory
+       jpgBuffer = new unsigned char[length + 1];
+
+        // move file contents into the buffer
+        infile.read(jpgBuffer, length);
+
+        // close the file
+        infile.close();
     }
     else {
-        cout << jpgIFileName << "\tdoes NOT exist" << endl;
-        inFileOpen = false;
+        cout << "Read file: " << jpgIFileName << "\t NOT found" << endl;
     }
 
-    // Open output file
-    // Name is the same as the input file with "_fixed" apended onto the end
-    basic_ofstream<unsigned char> outfile;
-    string jpgOFileName = jpgIFileName;
-    std::string key(".JP");
-    std::size_t found = jpgOFileName.rfind(key);
-    if (found != std::string::npos)
-        jpgOFileName.replace(found, key.length(), "_fixed.jp");
+    //// Open output file
+    //// Name is the same as the input file with "_fixed" apended onto the end
+    //basic_ofstream<unsigned char> outfile;
+    //string jpgOFileName = jpgIFileName;
+    //std::string key(".JP");
+    //std::size_t found = jpgOFileName.rfind(key);
+    //if (found != std::string::npos)
+    //    jpgOFileName.replace(found, key.length(), "_fixed.jp");
 
-    bool outFileOpen = false;
-    outfile.open(jpgOFileName, ios::binary);
-    if (outfile.is_open()) {
-        cout << jpgOFileName << "\texists" << endl;
-        outFileOpen = true;
-    }
-    else {
-        cout << jpgOFileName << "\tdoes NOT exist" << endl;
-        outFileOpen = false;
-    }
+    //bool outFileOpen = false;
+    //outfile.open(jpgOFileName, ios::binary);
+    //if (outfile.is_open()) {
+    //    cout << jpgOFileName << "\texists" << endl;
+    //    outFileOpen = true;
+    //}
+    //else {
+    //    cout << jpgOFileName << "\tdoes NOT exist" << endl;
+    //    outFileOpen = false;
+    //}
 
-    // get length of input file into length. Return to beginning of file.
-    infile.seekg(0, ios::end);
-    streamoff length = infile.tellg();
-    infile.seekg(0, ios::beg);
-
-    //// Put the file  contents into a vector
-    ////template < class T, class Alloc = allocator<T> > class vector; // generic template
-    //vector<char> jpgVector;
-    //vector<char>::iterator it;
-
-    //allocate memory
-    unsigned char* jpgBuffer = new unsigned char[length + 1];
-
-    ////read the data as a block into the buffer then close the file
-    infile.read(jpgBuffer, length);
-
-    //jpgVector.assign(jpgBuffer, jpgBuffer + length + 1);
-    //it = jpgVector.begin();
-    //int addr = it - it;
     pe.printXBytes(jpgBuffer, 0, 0x4f);
-    infile.close();
 
     // print out jpgVector contents
 

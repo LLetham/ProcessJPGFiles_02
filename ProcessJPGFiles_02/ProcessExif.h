@@ -6,21 +6,23 @@
 #include <iomanip>
 
 
-
 using namespace std;
 
 
 class ProcessExif
 {
 private:
-    //vector<char>::iterator it;
+    uint16_t startPtr = 0;
+    uint16_t endPtr;
+    uint16_t exifStart;
 
 
 public:
 
-
-
-
+    /********************************************************************/
+    // Print out values from the buffer in hex. This is used as a debug
+    // tool to see what is being found in the input file.
+    /********************************************************************/
     void printXBytes(unsigned char* buf, unsigned int offs, int numBytes) {
         int x = 0;
         for (int i = 0; i < numBytes + 1; i++) {
@@ -34,6 +36,11 @@ public:
         }
     }
 
+    /*********************************************************************/
+    // Verify that the jpg file is properly formed and that it has an Exif
+    // header. Mark the location of the various portions of the jpg file
+    // in variables that are maintained in the class.
+    /*********************************************************************/
 
 };
 

@@ -605,6 +605,7 @@ namespace {
 //
 // Locates the EXIF segment and parses it using parseFromEXIFSegment
 //
+// here!!!!!!!!!!!!!!!!!!!!!!!!!!!
 int easyexif::EXIFInfo::parseFrom(unsigned char* buf, unsigned len) {
     // Sanity check: all JPEG files start with 0xFFD8.
     if (!buf || len < 4) return PARSE_EXIF_ERROR_NO_JPEG;

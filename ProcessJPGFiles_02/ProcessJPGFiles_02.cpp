@@ -137,6 +137,7 @@ int main()
 
     ////read the data as a block into the buffer then close the file
     infile.read(jpgBuffer, length);
+
     //jpgVector.assign(&jpgBuffer, &jpgBuffer + length + 1);
     //infile.close();
 

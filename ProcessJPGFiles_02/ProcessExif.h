@@ -1,5 +1,12 @@
 #pragma once
 
+// This code is presently not used. 
+// While trying to understand easyexif, I started writing this to process the exif portion of a 
+// jpg file. I seen figured out a way to put a small layer over easyexif to change only the 
+// date and time when the original photo was taken (i.e.: tag = 0x9003).
+// More thorough processing of a jpg file will be left for another time.
+// It would be nice to add tags as associated information that do not exist in the jpg file.
+
 #include <vector>
 #include <stdio.h>
 #include <iostream>

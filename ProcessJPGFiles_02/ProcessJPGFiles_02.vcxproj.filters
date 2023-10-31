@@ -20,9 +20,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EXIFInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ProcessFilesInDir.h">
       <Filter>Header Files</Filter>
     </ClInclude>

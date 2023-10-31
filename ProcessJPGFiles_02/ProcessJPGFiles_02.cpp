@@ -90,10 +90,10 @@ int main()
 
      // Open input file
     //ifstream infile;
-    string jpgIFileName = "01_nat_hist_london_0033.jpg";
+    //string jpgIFileName = "01_nat_hist_london_0033.jpg";
     //string jpgIFileName = "01_nat_hist_london_0001.jpg";
     //string jpgIFileName = "0C875ED2-oliver-18664-000.JPEG";
-    //string jpgIFileName = "guatemala_125222-SL-002.jpg";
+    string jpgIFileName = "guatemala_125222-SL-002.jpg";
     //string jpgIFileName = "guatemala_125222-SL-003.jpg";
     //string jpgIFileName = "tanya_20230523_142345.jpg";
     //string jpgIFileName = "tanya_20230523_142359.jpg";
@@ -159,7 +159,7 @@ int main()
     // Parse EXIF
     easyexif::EXIFInfo result;
     //unsigned char writeData[20] = "12:34:5678 9a:bc:de\0";
-    result.writeData("12:34:5678 9a:bc:de\0");
+    result.writeData("1234:56:78 9a:bc:de\0");
     int code = result.parseFrom(jpgBuffer, length);
     //delete[] jpgBuffer;
     if (code) {

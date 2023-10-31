@@ -49,13 +49,13 @@ namespace easyexif {
         // PARAM 'length': The length of the JPEG image.
         // RETURN:  PARSE_EXIF_SUCCESS (0) on succes with 'result' filled out
         //          error code otherwise, as defined by the PARSE_EXIF_ERROR_* macros
-        int parseFrom(const unsigned char* data, std::streamoff length);
-        int parseFrom(const std::string& data);
+        int parseFrom(unsigned char* data, std::streamoff length);
+        int parseFrom(std::string& data);
 
         // Parsing function for an EXIF segment. This is used internally by parseFrom()
         // but can be called for special cases where only the EXIF section is
         // available (i.e., a blob starting with the bytes "Exif\0\0").
-        int parseFromEXIFSegment(const unsigned char* buf, std::streamoff len);
+        int parseFromEXIFSegment(unsigned char* buf, std::streamoff len);
 
         // Set all data members to default values.
         void clear();
@@ -156,7 +156,7 @@ namespace easyexif {
         void printXBytes(unsigned char* buf, std::streamoff offs, int numBytes) {
             int x = 0;
             for (int i = 0; i < numBytes + 1; i++) {
-                if (i % 0x10 == 0) printf("%016X: ", uint16_t (offs));
+                if (i % 0x10 == 0) printf("%016X: ", uint16_t (offs + i));
                 printf("%02X ", buf[offs + i]);
                 x++;
                 if (x == 0x10) {
@@ -522,9 +522,9 @@ namespace {
         result.data(data);
     }
 
-    // here!!!!!!!!!!!! IFEntry result
+    // Note 2
     template <bool alignIntel>
-    IFEntry parseIFEntry_temp(const unsigned char* buf, std::streamoff offs,
+    IFEntry parseIFEntry_temp(unsigned char* buf, std::streamoff offs,
         std::streamoff base, std::streamoff len) {
         IFEntry result;
 
@@ -534,6 +534,7 @@ namespace {
             return result;
         }
 
+        // Note 3
         parseIFEntryHeader<alignIntel>(buf + offs, result);
 
         // Parse value in specified format
@@ -584,7 +585,7 @@ namespace {
             result.tag(0xFF);
         }
         return result;
-    }
+    }   // end of parseIFEntry_temp
 
     // helper functions for convinience
     template <typename T>
@@ -608,7 +609,8 @@ namespace {
         }
     }
 
-    IFEntry parseIFEntry(const unsigned char* buf, std::streamoff offs,
+    // note 1
+    IFEntry parseIFEntry(unsigned char* buf, std::streamoff offs,
                         const bool alignIntel, std::streamoff base,
                         std::streamoff len) {
         if (alignIntel) {
@@ -624,7 +626,7 @@ namespace {
 /***************************************************************************/
 // Locates the EXIF segment and parses it using parseFromEXIFSegment
 //
-int easyexif::EXIFInfo::parseFrom(const unsigned char* buf, std::streamoff len) {
+int easyexif::EXIFInfo::parseFrom(unsigned char* buf, std::streamoff len) {
     // Sanity check: all JPEG files start with 0xFFD8.
     if (!buf || len < 4) return PARSE_EXIF_ERROR_NO_JPEG;
     if (buf[0] != 0xFF || buf[1] != 0xD8) return PARSE_EXIF_ERROR_NO_JPEG;
@@ -670,9 +672,8 @@ int easyexif::EXIFInfo::parseFrom(const unsigned char* buf, std::streamoff len) 
     return parseFromEXIFSegment(buf + offs, len - offs);
 }
 
-int easyexif::EXIFInfo::parseFrom(const string& data) {
-    return parseFrom(
-        reinterpret_cast<const unsigned char*>(data.data()), static_cast<unsigned>(data.length()));
+int easyexif::EXIFInfo::parseFrom(string& data) {
+    return parseFrom(reinterpret_cast<unsigned char*>(data.data()), static_cast<unsigned>(data.length()));
 }
 
 //
@@ -681,8 +682,7 @@ int easyexif::EXIFInfo::parseFrom(const string& data) {
 // PARAM: 'buf' start of the EXIF TIFF, which must be the bytes "Exif\0\0".
 // PARAM: 'len' length of buffer
 //
-int easyexif::EXIFInfo::parseFromEXIFSegment(const unsigned char* buf,
-    std::streamoff len) {
+int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff len) {
     bool alignIntel = true;  // byte alignment (defined in EXIF header)
     std::streamoff offs = 0;       // current offset into buffer
     if (!buf || len < 6) return PARSE_EXIF_ERROR_NO_EXIF;
@@ -800,8 +800,8 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(const unsigned char* buf,
         if (offs + 6 + 12 * num_sub_entries > len) return PARSE_EXIF_ERROR_CORRUPT;
         offs += 2;
         while (--num_sub_entries >= 0) {
-            IFEntry result =
-                parseIFEntry(buf, offs, alignIntel, tiff_header_start, len);
+            // here!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            IFEntry result = parseIFEntry(buf, offs, alignIntel, tiff_header_start, len);
             switch (result.tag()) {
             case 0x829a:
                 // Exposure time in seconds
@@ -829,6 +829,34 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(const unsigned char* buf,
 
             case 0x9003:
                 // Original date and time
+
+                // By the time execution gets here, the start of buf has been moved from the start of 
+                // the jpg file to the start of the start of the 'Exif\0\0'. 
+                // The offset to the data for the date and time is:
+                //      tiff_header_start + result.data()
+                // result.data is the data portion of the 12-byte exif entry, but since the data does
+                // not fit into 12 bytes, the data in the 4-byte data is the offset to where the data
+                // is actually stored.
+                // I have no idea what offs is pointing to.
+                //printf("tag:\t%X\n", result.tag());
+                //printf("format:\t%X\n", result.format());
+                //printf("length\t%X\n", result.length());
+                //printf("data:\t%X\n", result.data());
+
+                //printXBytes(buf, 0, 0x1f);
+                //std::cout << std::endl;
+                //printXBytes(buf, offs, 0x1f);
+                //std::cout << std::endl;
+                ////printXBytes(buf, offs + tiff_header_start + result.data(), 0x5f);
+                //printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+                //std::cout << std::endl;
+
+                easyexif::EXIFInfo::writeXBytes(buf, tiff_header_start + result.data(), 20);
+
+                //printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+
+                // The below code gets the orginal value which was extracted by the parseIFEntry
+                // at the beginning of the loop.
                 if (result.format() == 2)
                     this->DateTimeOriginal = result.val_string();
                 break;

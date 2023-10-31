@@ -128,13 +128,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="EXIFInfo.cpp" />
-    <ClCompile Include="ProcessExif.cpp" />
-    <ClCompile Include="ProcessFilesInDir.cpp" />
     <ClCompile Include="ProcessJPGFiles_02.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EXIFInfo.h" />
+    <ClInclude Include="EXIFInfo_02.h" />
     <ClInclude Include="ProcessExif.h" />
     <ClInclude Include="ProcessFilesInDir.h" />
   </ItemGroup>

@@ -18,15 +18,6 @@
     <ClCompile Include="ProcessJPGFiles_02.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EXIFInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ProcessFilesInDir.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ProcessExif.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EXIFInfo.h">
@@ -36,6 +27,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ProcessExif.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EXIFInfo_02.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

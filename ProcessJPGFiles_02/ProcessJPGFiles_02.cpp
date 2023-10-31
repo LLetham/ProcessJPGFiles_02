@@ -159,6 +159,7 @@ int main()
     // Parse EXIF
     easyexif::EXIFInfo result;
     //unsigned char writeData[20] = "12:34:5678 9a:bc:de\0";
+    result.writeData("12:34:5678 9a:bc:de\0");
     int code = result.parseFrom(jpgBuffer, length);
     //delete[] jpgBuffer;
     if (code) {

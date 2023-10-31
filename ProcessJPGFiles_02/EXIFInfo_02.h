@@ -150,6 +150,40 @@ namespace easyexif {
         EXIFInfo() {
             clear();
         }
+
+        /********************************************************************************/
+        // Functions and data needed to write DateTimeOrignal field in EXIF portion of buffer
+        void printXBytes(unsigned char* buf, std::streamoff offs, int numBytes) {
+            int x = 0;
+            for (int i = 0; i < numBytes + 1; i++) {
+                if (i % 0x10 == 0) printf("%016X: ", uint16_t (offs));
+                printf("%02X ", buf[offs + i]);
+                x++;
+                if (x == 0x10) {
+                    printf("\n");
+                    x = 0;
+                }
+            }
+        }
+
+        /********************************************************/
+        // Transfer the data to be written from main to this class
+        void writeData(std::string writeDateTimeOrig) {
+            writeDateTimeOriginal = writeDateTimeOrig;
+        }
+
+        /*******************************************************/
+        // Actually write the value into the buffer
+        void writeXBytes(unsigned char* buf, std::streamoff offs, int numBytes) {
+            for (int i = 0; i < numBytes; i++) {
+                buf[offs + i] = writeDateTimeOriginal[i];
+            }
+        }
+
+        /*******************************************************/
+        // Store the value from main in the below variable.
+        std::string writeDateTimeOriginal;      // Data written by writeData
+
     };
 
 }
@@ -357,7 +391,7 @@ namespace {
                 break;
             }
         }
-    };
+    };      // End of Class IFE
 
     // Helper functions
     template <typename T, bool alignIntel>
@@ -488,6 +522,7 @@ namespace {
         result.data(data);
     }
 
+    // here!!!!!!!!!!!! IFEntry result
     template <bool alignIntel>
     IFEntry parseIFEntry_temp(const unsigned char* buf, std::streamoff offs,
         std::streamoff base, std::streamoff len) {

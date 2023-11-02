@@ -1,20 +1,21 @@
 #pragma once
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <cstring>
-#include <cmath>
-#include <stdio.h>
-#include <ctime>
-#include <stdlib.h>
-#include <list>
-
-#include <filesystem> // C++17 standard header file name
-#include <sys/stat.h>
+//#include <iostream>
+//#include <fstream>
+//#include <string>
+//#include <cstring>
+//#include <cmath>
+//#include <stdio.h>
+//#include <ctime>
+//#include <stdlib.h>
+//#include <list>
+//
+//#include <filesystem> // C++17 standard header file name
+//#include <sys/stat.h>
 
 #define DEBUG_processJSON 0
 
+using namespace std;
 
 
 // Data structure to hold information regarding the file names in the
@@ -36,8 +37,9 @@
 //		Mar 2, 2018, 1:10:08 AM UTC
 // Store json dates and times as ascii characters followed by NULL.
 struct FileInfoRecord {
+	char* fullPathFile = NULL;		// Name of file with full path name and extension.
 	char* fullPathNoExt = NULL;		// Full path name of file without extension.
-	char* stemName = NULL;
+	char* stemName = NULL;			// File name before the extension
 	int typeJPGFound = 0;			// A file with a .jpg extension found for the stem.
 	int typeJSONFound = 0;			// A file with a .json extension found for the stem.
 	int typePNGFound = 0;			// File is .png file
@@ -49,12 +51,10 @@ struct FileInfoRecord {
 	char takenHour[3] = { NULL };
 	char takenMin[3] = { NULL };
 	char takenSec[3] = { NULL };
+	char dateTaken[20] = {NULL};
 };
 
-
-
-
-
+/************************************************************************/
 class ProcessFilesInDir
 {
 
@@ -66,6 +66,7 @@ private:
 	std::string fileStem;
 	bool matchFound = false;
 	std::string tmpStr;
+	std::string tmpMonth;
 
 	// structure object to receive data for adding to a std::list
 	struct FileInfoRecord fInfoNode;
@@ -97,6 +98,31 @@ private:
 	int charCount = 0;
 	int strMatch = 0;
 	char c;
+
+
+	map<string, string> months{
+		{"Jan", "01"},
+		{"Feb", "02"},
+		{"Mar", "03"},
+		{"Apr", "04"},
+		{"May", "05"},
+		{"Jun", "06"},
+		{"Jul", "07"},
+		{"Aug", "08"},
+		{"Sep", "09"},
+		{"Oct", "10"},
+		{"Nov", "11"},
+		{"Dec", "12"}
+	};
+
+
+	string tmpArr[12][2] = { {"Jan", "01"}, {"Feb", "02"}, {"Mar", "03"},
+							{"Apr", "04"}, {"May", "05"}, {"Jun", "06"},
+							{"Jul", "07"}, {"Aug", "08"}, {"Sep", "09"},
+							{"Oct", "10"}, {"Nov", "11"}, {"Dec", "12"} };
+
+
+	//map <string, string>::iterator it_month;
 
 
 public:
@@ -329,9 +355,10 @@ public:
 	// Format in jpg. The time is 24-hour time:
 	//			YYYY:MM:DD HH:MM:SS
 	void processJSONFile(std::ifstream& infileC) {
+		// get a line from the file, see if it has the "photoTakenTime" phrase.
+		photoTakenTimeFound = false;
 		while (!infileC.eof()) {
-			photoTakenTimeFound = false;
-			std::getline(infileC, fLine);
+			std::getline(infileC, fLine);		// transfer the line from file to a string.
 			i = int(fLine.find("photoTakenTime"));
 			if ((fLine.find("photoTakenTime") != std::string::npos) && (photoTakenTimeFound == false)) {
 				photoTakenTimeFound = true;
@@ -343,7 +370,7 @@ public:
 				std::getline(infile, fLine);	// get date line
 				fLine.push_back('\0');
 
-				// extract date and time
+				// extract date and time from the date lline extracted above.
 				i = 0;
 				while ((fLine[i] != ':') && fLine[i] != '\0') i++;
 
@@ -359,7 +386,7 @@ public:
 				fileRecordListIterator->takenMonth[3] = '\0';
 				i = i + 4;		// i is now pointing at day of date
 
-				tmpStr = fLine.substr(i, fLine.length());
+				tmpStr = fLine.substr(i, fLine.length());	// move pointer tmpStr to towards end of string
 				//std::cout << tmpStr << std::endl;
 				//std::cout << "tmpStr[" << i << "]: " << char(tmpStr[i]) << std::endl;
 				//std::cout << "tmpStr[" << (i + 1) << "]: " << char(tmpStr[i + 1]) << std::endl;
@@ -490,9 +517,38 @@ public:
 			}
 
 		}
-		infile.close();
-		fileFound = false;	// ????? Is this in the right place?
 
+		/********************************************************************/
+		// Convert data taken for json file into a string in the format:
+		//		YYYY:MM:DD HH:MM:SS\0
+		// 
+		// Store the date time string in dateTaken of the FileInfoRecord structure. 
+		if (photoTakenTimeFound == true) {
+			// Convert month in FileInfoRecord to an ascii number
+			tmpMonth.clear();
+			tmpStr.clear();
+
+			// Use map to convert month string (e.g., "Jan", "Feb") to string number (e.g., "01", "02")
+			tmpMonth = months.find(fileRecordListIterator->takenMonth)->second;
+
+			tmpStr = fileRecordListIterator->takenYear;
+			tmpStr.push_back(':');
+			tmpStr.append(tmpMonth);
+			tmpStr.push_back(':');
+			tmpStr.append(fileRecordListIterator->takenDay, 2);
+			tmpStr.push_back(' ');
+			tmpStr.append(fileRecordListIterator->takenHour, 2);
+			tmpStr.push_back(':');
+			tmpStr.append(fileRecordListIterator->takenMin, 2);
+			tmpStr.push_back(':');
+			tmpStr.append(fileRecordListIterator->takenSec, 2);
+			tmpStr.push_back('\0');
+			tmpStr.copy(fileRecordListIterator->dateTaken, tmpStr.length());
+
+			//cout << "tmpStr: " << tmpStr << endl;
+		}
+
+		infile.close();
 	}
 
 
@@ -501,10 +557,12 @@ public:
 	// A file has been found in the directory. Save the information regarding the file in the
 	// linked list.
 	void storeFileFound(std::filesystem::path outfilename) {
+		// get the file name with the extension and the full path
 		fullFilePathName = outfilename.string();
 		fullFilePathName.push_back('\0');
 
 		// remove extension from full file name
+		// start at the end of the full path file name and move backwards to find the period.
 		fullFilePathNameNoExt = fullFilePathName;
 		for (i = (int(fullFilePathNameNoExt.size() - 1)); i > (fullFilePathNameNoExt.size() - 7); i--) {
 			c = fullFilePathName[i];
@@ -533,13 +591,15 @@ public:
 		matchFound = false;
 		fileRecordListIterator = fileRecordList.begin();
 		while (fileRecordListIterator != fileRecordList.end() && (matchFound == false)) {
-			//i = cmpStrings(fileStem, fileRecordListIterator->stemName);
 			if (cmpStrings(fileStem, fileRecordListIterator->stemName)) {
 				// match found. fileRecordListIterator points to the node in the list.
 				matchFound = true;
 			}
 			else fileRecordListIterator++;
 		}
+
+		// LL: need to save the full file name with the extension.
+		// here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 		if (matchFound == false) {
 			// match not found. Add a new node to the list and make fileRecordListIterator point
@@ -550,6 +610,7 @@ public:
 			// the initialized values into the node of the list.
 			fileRecordList.push_front(fInfoNode);
 			fileRecordListIterator = fileRecordList.begin();
+			fileRecordListIterator->fullPathFile = (char*)malloc(fullFilePathName.length());
 			fileRecordListIterator->fullPathNoExt = (char*)malloc(fullFilePathNameNoExt.length());
 			fullFilePathNameNoExt.copy(fileRecordListIterator->fullPathNoExt, fullFilePathNameNoExt.length());
 			fileRecordListIterator->stemName = (char*)malloc(fileStem.length());
@@ -583,9 +644,6 @@ public:
 			fileFound = false;
 			infile.open(fullFilePathName);
 			if (infile.is_open()) {
-#if DEBUG_processJSON == 1
-				std::cout << "Read file:\t" << fileStem << ".json" << std::endl;
-#endif
 				fileFound = true;
 			}
 			else {
@@ -611,8 +669,6 @@ public:
 		// the file is neither jpg nor json, so set other bit and save path with extension
 		else {
 			fileRecordListIterator->typeOtherFound = 1;
-
-			// Figure out what needs to be done here!!!!!!!!!
 			fileRecordListIterator->fullPathOther = (char*)malloc(fullFilePathName.length() + 1);
 			fullFilePathName.copy(fileRecordListIterator->fullPathOther, fullFilePathName.length());
 		}

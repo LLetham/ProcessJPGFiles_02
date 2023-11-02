@@ -1,0 +1,37 @@
+{
+  "title": "IMG_2892.JPG",
+  "description": "",
+  "imageViews": "2",
+  "creationTime": {
+    "timestamp": "1550440806",
+    "formatted": "Feb 17, 2019, 10:00:06 PM UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1547135161",
+    "formatted": "Jan 10, 2019, 3:46:01 PM UTC"
+  },
+  "geoData": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "geoDataExif": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "url": "https://lh3.googleusercontent.com/t_aFV0I_nrh2ehrf5bSY4bORliqFvyQOFpF58CfpXtgzLLOHUkeL5xFD9IVurM2x0XshqbwFY8v8eyxhGl8uFt194zW8B6SlWXR77zE",
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceType": "IOS_PHONE"
+    }
+  },
+  "photoLastModifiedTime": {
+    "timestamp": "1661117449",
+    "formatted": "Aug 21, 2022, 9:30:49 PM UTC"
+  }
+}

@@ -7,12 +7,13 @@
 #include <cstring>
 #include <cmath>
 #include <stdio.h>
-#include <ctime>
+//#include <ctime>
 #include <stdlib.h>
 #include <list>
 #include <vector>
 #include <iterator>
 #include <algorithm>
+#include <map>
 #include <filesystem> // C++17 standard header file name
 #include <sys/stat.h>
 #include "ProcessFilesInDir.h"
@@ -32,7 +33,7 @@ using namespace std;
 
 int main()
 {
-    string directoryPath;
+    //string directoryPath;
     string extension;
     string stem;
     string outfilename_str;
@@ -46,9 +47,6 @@ int main()
 
 
     // Path to the directory
-    directoryPath = "F:\\git_repositories\\ProcessJPGFiles_02\\oliver";
-    //directoryPath = "C:\\Users\\lletham\\source\\repos\\ProcessJPGFiles_02\\oliver";
-
 
     // This class will distinguish a file from a directory
     struct stat sb;
@@ -56,7 +54,17 @@ int main()
     /*************************************************************/
     // Looping until all the items of the directory are exhausted
     numFiles = 0;
+
+
+    std::filesystem::path directoryPath = fs::current_path();
+
+    // add subdirectory during testing
+    directoryPath += "\\oliver";      // alternate way: directoryPath = directoryPath / "oliver";
+    std::cout << "directoryPath " << directoryPath << std::endl;
+
+
     for (const auto& entry : fs::directory_iterator(directoryPath)) {
+        //for (const auto& entry : fs::directory_iterator(directoryPath)) {
 
         // Converting the path to const char * in the subsequent lines
         std::filesystem::path outfilename = entry.path();
@@ -68,9 +76,7 @@ int main()
         // non-directory or not If it does, displays path
         if (stat(path, &sb) == 0 && !(sb.st_mode & S_IFDIR)) {
             // path is pointing to a file
-#if DEBUG_PrintFilePath == 1
-            std::cout << path << std::endl;
-#endif
+            //std::cout << path << std::endl;
             numFiles++; // count number of files found in the directory
         }
 

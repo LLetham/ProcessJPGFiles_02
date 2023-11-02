@@ -1,0 +1,37 @@
+{
+  "title": "IMG_2897.HEIC",
+  "description": "",
+  "imageViews": "3",
+  "creationTime": {
+    "timestamp": "1550440831",
+    "formatted": "Feb 17, 2019, 10:00:31 PM UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1547254984",
+    "formatted": "Jan 12, 2019, 1:03:04 AM UTC"
+  },
+  "geoData": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "geoDataExif": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "url": "https://lh3.googleusercontent.com/u5SQKV_83IqHdo0RZn0QuMTaiwOSGSYWYWQQq6VULjAfWHlNO021ZLi2wkyxHq1AWMXP-rGjbO7ash_I3I-4x3QfyBrW7mtIwpTrO10",
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceType": "IOS_PHONE"
+    }
+  },
+  "photoLastModifiedTime": {
+    "timestamp": "1660532900",
+    "formatted": "Aug 15, 2022, 3:08:20 AM UTC"
+  }
+}

@@ -34,7 +34,7 @@
 #ifndef __EXIF_H
 #define __EXIF_H
 
-#include <string>
+//#include <string>
 
 namespace easyexif {
 
@@ -234,10 +234,10 @@ namespace easyexif {
 */
 //#include "exif.h"
 
-#include <algorithm>
-#include <cstdint>
-#include <stdio.h>
-#include <vector>
+//#include <algorithm>
+//#include <cstdint>
+//#include <stdio.h>
+//#include <vector>
 
 using std::string;
 

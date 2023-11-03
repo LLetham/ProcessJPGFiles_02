@@ -168,21 +168,28 @@ namespace easyexif {
 
         /********************************************************/
         // Transfer the data to be written from main to this class
-        void writeData(std::string writeDateTimeOrig) {
+        // If writeFlag = 0, the data should not be transferred to the buffer.
+        // If writeFlag = 1, the data should be transferred to the buffer for writing
+        // to an output file (e.g., *_fixed.jpg). 
+        void writeData(std::string writeDateTimeOrig, int writeFlag) {
             writeDateTimeOriginal = writeDateTimeOrig;
+            writeFlagGlobal = writeFlag;
         }
 
         /*******************************************************/
         // Actually write the value into the buffer
         void writeXBytes(unsigned char* buf, std::streamoff offs, int numBytes) {
-            for (int i = 0; i < numBytes; i++) {
-                buf[offs + i] = writeDateTimeOriginal[i];
+            if (writeFlagGlobal == 1) {
+                for (int i = 0; i < numBytes; i++) {
+                    buf[offs + i] = writeDateTimeOriginal[i];
+                }
             }
         }
 
         /*******************************************************/
         // Store the value from main in the below variable.
         std::string writeDateTimeOriginal;      // Data written by writeData
+        int writeFlagGlobal;                    // Control whether data is written
 
     };
 
@@ -238,6 +245,13 @@ namespace easyexif {
 //#include <cstdint>
 //#include <stdio.h>
 //#include <vector>
+#define DEBUG_9003_write 0
+#define DEBUG_9003_write_before 1
+#define DEBUG_9003_write_after 1
+#define DEBUG_9004 0
+#define DEBUG_9004_write_before 1
+#define DEBUG_9004_write_after 1
+#define DEBUG_sections 1
 
 using std::string;
 
@@ -738,53 +752,84 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
         switch (result.tag()) {
         case 0x102:
             // Bits per sample
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
+
             if (result.format() == 3 && result.val_short().size())
                 this->BitsPerSample = result.val_short().front();
             break;
 
         case 0x10E:
             // Image description
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             if (result.format() == 2) this->ImageDescription = result.val_string();
             break;
 
         case 0x10F:
             // Digicam make
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             if (result.format() == 2) this->Make = result.val_string();
             break;
 
         case 0x110:
             // Digicam model
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             if (result.format() == 2) this->Model = result.val_string();
             break;
 
         case 0x112:
             // Orientation of image
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             if (result.format() == 3 && result.val_short().size())
                 this->Orientation = result.val_short().front();
             break;
 
         case 0x131:
             // Software used for image
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             if (result.format() == 2) this->Software = result.val_string();
             break;
 
         case 0x132:
             // EXIF/TIFF date/time of image modification
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             if (result.format() == 2) this->DateTime = result.val_string();
             break;
 
         case 0x8298:
             // Copyright information
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             if (result.format() == 2) this->Copyright = result.val_string();
             break;
 
         case 0x8825:
             // GPS IFS offset
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             gps_sub_ifd_offset = tiff_header_start + result.data();
             break;
 
         case 0x8769:
             // EXIF SubIFD offset
+#if DEBUG_sections == 1
+            printf("tag: %x\n", result.tag());
+#endif
             exif_sub_ifd_offset = tiff_header_start + result.data();
             break;
         }
@@ -805,18 +850,27 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
             switch (result.tag()) {
             case 0x829a:
                 // Exposure time in seconds
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5 && result.val_rational().size())
                     this->ExposureTime = result.val_rational().front();
                 break;
 
             case 0x829d:
                 // FNumber
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5 && result.val_rational().size())
                     this->FNumber = result.val_rational().front();
                 break;
 
             case 0x8822:
                 // Exposure Program
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 3 && result.val_short().size())
                     this->ExposureProgram = result.val_short().front();
                 break;
@@ -829,7 +883,11 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0x9003:
                 // Original date and time
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
 
+#if DEBUG_9003_write == 1
                 // By the time execution gets here, the start of buf has been moved from the start of 
                 // the jpg file to the start of the start of the 'Exif\0\0'. 
                 // The offset to the data for the date and time is:
@@ -838,22 +896,29 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
                 // not fit into 12 bytes, the data in the 4-byte data is the offset to where the data
                 // is actually stored.
                 // I have no idea what offs is pointing to.
-                //printf("tag:\t%X\n", result.tag());
-                //printf("format:\t%X\n", result.format());
-                //printf("length\t%X\n", result.length());
-                //printf("data:\t%X\n", result.data());
+                printf("tag:\t%X\n", result.tag());
+                printf("format:\t%X\n", result.format());
+                printf("length\t%X\n", result.length());
+                printf("data:\t%X\n", result.data());
 
-                //printXBytes(buf, 0, 0x1f);
-                //std::cout << std::endl;
-                //printXBytes(buf, offs, 0x1f);
-                //std::cout << std::endl;
-                ////printXBytes(buf, offs + tiff_header_start + result.data(), 0x5f);
-                //printXBytes(buf, tiff_header_start + result.data(), 0x5f);
-                //std::cout << std::endl;
+                printXBytes(buf, 0, 0x1f);
+                std::cout << std::endl;
+                printXBytes(buf, offs, 0x1f);
+                std::cout << std::endl;
+                //printXBytes(buf, offs + tiff_header_start + result.data(), 0x5f);
+                printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+                std::cout << std::endl;
+#endif
+#if DEBUG_9003_write_before == 1
+                printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+                std::cout << std::endl;
+#endif
 
                 easyexif::EXIFInfo::writeXBytes(buf, tiff_header_start + result.data(), 20);
 
-                //printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+#if DEBUG_9003_write_after == 1
+                printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+#endif
 
                 // The below code gets the orginal value which was extracted by the parseIFEntry
                 // at the beginning of the loop.
@@ -863,30 +928,56 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0x9004:
                 // Digitization date and time
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
+#if DEBUG_9004_write_before == 1
+                printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+                std::cout << std::endl;
+#endif
+
+                easyexif::EXIFInfo::writeXBytes(buf, tiff_header_start + result.data(), 20);
+
+#if DEBUG_9004_write_after == 1
+                printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+#endif
+
                 if (result.format() == 2)
                     this->DateTimeDigitized = result.val_string();
                 break;
 
             case 0x9201:
                 // Shutter speed value
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5 && result.val_rational().size())
                     this->ShutterSpeedValue = result.val_rational().front();
                 break;
 
             case 0x9204:
                 // Exposure bias value
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5 && result.val_rational().size())
                     this->ExposureBiasValue = result.val_rational().front();
                 break;
 
             case 0x9206:
                 // Subject distance
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5 && result.val_rational().size())
                     this->SubjectDistance = result.val_rational().front();
                 break;
 
             case 0x9209:
                 // Flash used
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 3 && result.val_short().size()) {
                     uint16_t data = result.val_short().front();
 
@@ -898,24 +989,36 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0x920a:
                 // Focal length
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5 && result.val_rational().size())
                     this->FocalLength = result.val_rational().front();
                 break;
 
             case 0x9207:
                 // Metering mode
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 3 && result.val_short().size())
                     this->MeteringMode = result.val_short().front();
                 break;
 
             case 0x9291:
                 // Subsecond original time
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 2)
                     this->SubSecTimeOriginal = result.val_string();
                 break;
 
             case 0xa002:
                 // EXIF Image width
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 4 && result.val_long().size())
                     this->ImageWidth = result.val_long().front();
                 if (result.format() == 3 && result.val_short().size())
@@ -924,6 +1027,9 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0xa003:
                 // EXIF Image height
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 4 && result.val_long().size())
                     this->ImageHeight = result.val_long().front();
                 if (result.format() == 3 && result.val_short().size())
@@ -931,6 +1037,9 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
                 break;
 
             case 0xa20e:
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 // EXIF Focal plane X-resolution
                 if (result.format() == 5) {
                     this->LensInfo.FocalPlaneXResolution = result.val_rational()[0];
@@ -939,6 +1048,9 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0xa20f:
                 // EXIF Focal plane Y-resolution
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5) {
                     this->LensInfo.FocalPlaneYResolution = result.val_rational()[0];
                 }
@@ -946,6 +1058,9 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0xa210:
                 // EXIF Focal plane resolution unit
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 3 && result.val_short().size()) {
                     this->LensInfo.FocalPlaneResolutionUnit = result.val_short().front();
                 }
@@ -953,12 +1068,18 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0xa405:
                 // Focal length in 35mm film
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 3 && result.val_short().size())
                     this->FocalLengthIn35mm = result.val_short().front();
                 break;
 
             case 0xa432:
                 // Focal length and FStop.
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 5) {
                     int sz = static_cast<unsigned>(result.val_rational().size());
                     if (sz)
@@ -974,6 +1095,9 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0xa433:
                 // Lens make.
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 2) {
                     this->LensInfo.Make = result.val_string();
                 }
@@ -981,6 +1105,9 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 
             case 0xa434:
                 // Lens model.
+#if DEBUG_sections == 1
+                printf("tag: %x\n", result.tag());
+#endif
                 if (result.format() == 2) {
                     this->LensInfo.Model = result.val_string();
                 }

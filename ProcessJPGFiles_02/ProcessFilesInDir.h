@@ -14,6 +14,9 @@
 //#include <sys/stat.h>
 
 #define DEBUG_processJSON 0
+#define DEBUG_processDATE 0
+#define DEBUG_processJPGFiles 1
+
 
 using namespace std;
 
@@ -87,7 +90,7 @@ private:
 	int numOther = 0;
 	int numTrio = 0;
 
-	// file handling
+	// JSON file handling
 	std::ifstream infile;
 	bool fileFound = false;
 	std::string fLine;
@@ -136,10 +139,18 @@ private:
 		{'2', "12"}
 	};
 
+	// variables for processing jpg file
+	basic_ifstream<unsigned char> infileJPG;
+	unsigned char* jpgBuffer = NULL;
+	string jpgIFileName;
+	streamoff length;
 
+	basic_ofstream<unsigned char> outfileJPG;
+	string jpgOFileName;
 
 public:
 
+	/*****************************************************************/
 	// compare characters until the '\0' character is reached in str1
 	// str1 = std::string
 	// str2 = char*
@@ -165,6 +176,34 @@ public:
 		return (strMatch);
 	}
 
+	/***************************************************************/
+	// Traverse the list and print out the date the photograph was taken
+	// as retreived from the json file for all jpg-json matching files.
+	void outputDateTakenInfo() {
+
+		fileRecordListIterator = fileRecordList.begin();
+		numMatchedJPG = 0;
+
+		std::cout << std::endl << "Matching .jpg and .json files" << std::endl;
+		while (fileRecordListIterator != fileRecordList.end()) {
+			if ((fileRecordListIterator->typeJPGFound == 1) &&
+				(fileRecordListIterator->typeJSONFound == 1) &&
+				(fileRecordListIterator->typePNGFound == 0) &&
+				(fileRecordListIterator->typeOtherFound == 0)) {
+
+				std::cout << "dateTaken: " << fileRecordListIterator->dateTaken << "\t" << fileRecordListIterator->stemName << std::endl;
+
+				numMatchedJPG++;
+			}
+
+			fileRecordListIterator++;
+		}
+		numMatchedJPG = numMatchedJPG;
+		std::cout << "Number of records = " << numMatchedJPG << std::endl;
+
+	}
+
+	/*************************************************************/
 	// Report the files that were found in the directory. Report:
 	//		.jpg files with matching .json file
 	//		.png files with matching .json file
@@ -328,22 +367,13 @@ public:
 		// summary
 		std::cout << std::endl;
 		std::cout << "SUMMARY" << std::endl;
-
 		std::cout << "\tMatching .jpg and .json files = " << numMatchedJPG << std::endl;
-
 		std::cout << "\tMatching .png and .json files = " << numMatchedPNG << std::endl;
-
 		std::cout << "\tUnmatched .jpg files = " << numUnMatchedJPG << std::endl;
-
 		std::cout << "\tUnmatched .png files = " << numUnMatchedPNG << std::endl;
-
 		std::cout << "\tUnmatched .json files = " << numUnMatchedJSON << std::endl;
-
 		std::cout << "\tOther files = " << numOther << std::endl;
-
 		std::cout << "\tSame stem files = " << numTrio << std::endl;
-
-
 
 		numFilesFound = numMatchedJPG +
 			numMatchedPNG +
@@ -375,7 +405,7 @@ public:
 			i = int(fLine.find("photoTakenTime"));
 			if ((fLine.find("photoTakenTime") != std::string::npos) && (photoTakenTimeFound == false)) {
 				photoTakenTimeFound = true;
-#if DEBUG_processJSON == 1
+#if DEBUG_processJSON
 				std::cout << "line photoTakenTime found" << std::endl;
 #endif
 
@@ -527,8 +557,9 @@ public:
 			tmpStr.append(fileRecordListIterator->takenSec, 2);
 			tmpStr.push_back('\0');
 			tmpStr.copy(fileRecordListIterator->dateTaken, tmpStr.length());
-
-			//cout << "tmpStr: " << tmpStr << endl;
+#if DEBUG_processDATE
+			cout << "tmpStr: " << tmpStr << endl;
+#endif
 		}
 
 		infile.close();
@@ -581,9 +612,6 @@ public:
 			else fileRecordListIterator++;
 		}
 
-		// LL: need to save the full file name with the extension.
-		// here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 		if (matchFound == false) {
 			// match not found. Add a new node to the list and make fileRecordListIterator point
 			// to it. initialize the values of node in the list.
@@ -593,13 +621,16 @@ public:
 			// the initialized values into the node of the list.
 			fileRecordList.push_front(fInfoNode);
 			fileRecordListIterator = fileRecordList.begin();
+
 			fileRecordListIterator->fullPathFile = (char*)malloc(fullFilePathName.length());
+			fullFilePathName.copy(fileRecordListIterator->fullPathFile, fullFilePathName.length());
+
 			fileRecordListIterator->fullPathNoExt = (char*)malloc(fullFilePathNameNoExt.length());
 			fullFilePathNameNoExt.copy(fileRecordListIterator->fullPathNoExt, fullFilePathNameNoExt.length());
+
 			fileRecordListIterator->stemName = (char*)malloc(fileStem.length());
 			fileStem.copy(fileRecordListIterator->stemName, fileStem.length());
 		}
-
 
 		// If the file is a jpg, set the jpg bit in the node
 		// fileRecordListIterator is already pointing to where the data must be stored.
@@ -656,6 +687,106 @@ public:
 			fullFilePathName.copy(fileRecordListIterator->fullPathOther, fullFilePathName.length());
 		}
 	}
+
+
+	//***********************************************************************************//
+	// Process jpg files that have a matching json file. Put the date from the json file
+	// into the jpg file as the DateTimeOriginal.
+	void xferDateTimeToJPG() {
+
+		fileRecordListIterator = fileRecordList.begin();
+		numMatchedJPG = 0;
+
+		//std::cout << std::endl << "Matching .jpg and .json files" << std::endl;
+		while (fileRecordListIterator != fileRecordList.end()) {
+			// Search for records that have matching jpg and json files and that have
+			// the date and time extracted from the json, formed into a string and stored
+			// in dateTaken.
+			if ((fileRecordListIterator->typeJPGFound == 1) &&
+				(fileRecordListIterator->typeJSONFound == 1) &&
+				(fileRecordListIterator->typePNGFound == 0) &&
+				(fileRecordListIterator->typeOtherFound == 0) &&
+				(fileRecordListIterator->dateTaken != NULL))
+			{
+				// Open jpg file, put the jpg file into a buffer and insert the json date into the buffer.
+				// Then create an output file that has the same stem as the jpg file but that appends "_fixed.jpg".
+				// Writ the modified buffer into the output file. 
+				jpgIFileName = fileRecordListIterator->fullPathFile;
+				cout << "dateTaken: " << fileRecordListIterator->dateTaken << "\t" << fileRecordListIterator->stemName << ".jpg" << endl;
+				infileJPG.open(jpgIFileName, ios::binary);
+
+				if (infileJPG.is_open()) {
+#if DEBUG_processJPGFiles
+					cout << "Read file: " << jpgIFileName << "\tfound" << endl;
+#endif
+
+					// Get file size
+					infileJPG.seekg(0, ios::end);
+					length = infileJPG.tellg();
+					infileJPG.seekg(0, ios::beg);
+
+					//allocate memory
+					jpgBuffer = new unsigned char[length];
+
+					// move file contents into the buffer
+					infileJPG.read(jpgBuffer, length);
+
+					// close the file
+					infileJPG.close();
+				}
+				else {
+					cout << "Read file: " << jpgIFileName << "\t NOT found" << endl;
+				}
+
+				// Parse the jpg file to access the EXIF metadata
+				// parsing from the jpgBuffer also changes the date in the Buffer at TagID 0x9003 to the
+				// dateTaken provided from the json file. When this section of code is executed, the buffer 
+				// holds the entire jpg file with the new dataTaken.
+				easyexif::EXIFInfo result;
+				result.writeData(fileRecordListIterator->dateTaken, 1);
+				int code = result.parseFrom(jpgBuffer, length);
+				if (code) {
+					printf("Error parsing EXIF: code %d\n", code);
+				}
+
+				// Create the output jpg file name using the stem for the input jpg file.
+				// Append "_fixed.jpg" to the stem then open an output file with that name.
+				// Write the buffer into the output file then close the output file and delete the buffer.
+				jpgOFileName = fileRecordListIterator->stemName;
+				jpgOFileName.append("_fixed.jpg");
+
+				bool outFileOpen = false;
+				outfileJPG.open(jpgOFileName, ios::binary);
+				if (outfileJPG.is_open()) {
+#if DEBUG_processJPGFiles
+					cout << "Write file: " << jpgOFileName << "\tfound" << endl;
+#endif
+
+					outfileJPG.write(jpgBuffer, length);
+					
+					// close the file
+					outfileJPG.close();
+
+					// delete the buffer
+					delete[] jpgBuffer;
+				}
+				else {
+				    cout << jpgOFileName << "\tdoes NOT exist" << endl;
+				}
+
+#if DEBUG_processJPGFiles
+				std::cout << "\t" << fileRecordListIterator->stemName << ".jpg processed" << std::endl;
+#endif
+				numMatchedJPG++;
+			}
+
+			fileRecordListIterator++;
+		}
+
+		std::cout << "Number of jpg files processed = " << numMatchedJPG << std::endl;
+
+	}
+
 
 
 };

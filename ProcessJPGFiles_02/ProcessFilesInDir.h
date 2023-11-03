@@ -67,6 +67,7 @@ private:
 	bool matchFound = false;
 	std::string tmpStr;
 	std::string tmpMonth;
+	std::string tmpHour;
 
 	// structure object to receive data for adding to a std::list
 	struct FileInfoRecord fInfoNode;
@@ -99,7 +100,7 @@ private:
 	int strMatch = 0;
 	char c;
 
-
+	// map string month name (e.g., "Jan") to string number (e.g., "01")
 	map<string, string> months{
 		{"Jan", "01"},
 		{"Feb", "02"},
@@ -115,14 +116,26 @@ private:
 		{"Dec", "12"}
 	};
 
+	// Map hour with AM/PM to characters in 24-hour time.
+	// Conversion for takenHour[3] in struct
+	map<char, string> hour12PMto9PM {
+		{'1', "13"},
+		{'2', "14"},
+		{'3', "15"},
+		{'4', "16"},
+		{'5', "17"},
+		{'6', "18"},
+		{'7', "19"},
+		{'8', "20"},
+		{'9', "21"}
+	};
 
-	string tmpArr[12][2] = { {"Jan", "01"}, {"Feb", "02"}, {"Mar", "03"},
-							{"Apr", "04"}, {"May", "05"}, {"Jun", "06"},
-							{"Jul", "07"}, {"Aug", "08"}, {"Sep", "09"},
-							{"Oct", "10"}, {"Nov", "11"}, {"Dec", "12"} };
+	map<char, string> hour10PMto12AM{
+		{'0', "22"},
+		{'1', "23"},
+		{'2', "12"}
+	};
 
-
-	//map <string, string>::iterator it_month;
 
 
 public:
@@ -352,7 +365,7 @@ public:
 	//			"formatted": "Mar 2, 2018, 1:10:08 AM UTC"
 	//			"formatted": "Feb 27, 2018, 6:04:25 PM UTC"
 	//			"formatted": "Jan 29, 2018, 11:27:42 PM UTC"
-	// Format in jpg. The time is 24-hour time:
+	// Format in jpg. The time is 24-hour time stored as a string:
 	//			YYYY:MM:DD HH:MM:SS
 	void processJSONFile(std::ifstream& infileC) {
 		// get a line from the file, see if it has the "photoTakenTime" phrase.
@@ -453,67 +466,37 @@ public:
 
 				tmpStr = fLine.substr(i, fLine.length());
 
+				// Convert time to 24-hour time
 				// See if AM or PM
-				if ((tmpStr[0] == 'P' || tmpStr[0] == 'p') && (fileRecordListIterator->takenHour[0] == '0')) {
-					// need to adjust the hour to hour + 12 to conver to 24-hour
-					// convert ascii to int, add 12 then convert to ascii
-					switch (fileRecordListIterator->takenHour[1]) {
-					case ('1'):
-						fileRecordListIterator->takenHour[0] = '1';
-						fileRecordListIterator->takenHour[1] = '3';
-						break;
-					case ('2'):
-						fileRecordListIterator->takenHour[0] = '1';
-						fileRecordListIterator->takenHour[1] = '4';
-						break;
-					case ('3'):
-						fileRecordListIterator->takenHour[0] = '1';
-						fileRecordListIterator->takenHour[1] = '5';
-						break;
-					case ('4'):
-						fileRecordListIterator->takenHour[0] = '1';
-						fileRecordListIterator->takenHour[1] = '6';
-						break;
-					case ('5'):
-						fileRecordListIterator->takenHour[0] = '1';
-						fileRecordListIterator->takenHour[1] = '7';
-						break;
-					case ('6'):
-						fileRecordListIterator->takenHour[0] = '1';
-						fileRecordListIterator->takenHour[1] = '8';
-						break;
-					case ('7'):
-						fileRecordListIterator->takenHour[0] = '1';
-						fileRecordListIterator->takenHour[1] = '9';
-						break;
-					case ('8'):
-						fileRecordListIterator->takenHour[0] = '2';
-						fileRecordListIterator->takenHour[1] = '0';
-						break;
-					case ('9'):
-						fileRecordListIterator->takenHour[0] = '2';
-						fileRecordListIterator->takenHour[1] = '1';
-						break;
+				tmpHour = '\0';
+
+				if ((tmpStr[0] == 'P') || (tmpStr[0] == 'p')) {
+
+					// Convert 1 pm to 9 pm to 24-hour
+					if ((fileRecordListIterator->takenHour[0] == '0')) {
+						// Use map to convert taken hour to 24 hour
+						tmpHour = hour12PMto9PM.find(fileRecordListIterator->takenHour[1])->second;
 					}
+
+					// Convert 10 pm to 11 pm to 24-hour
+					if (fileRecordListIterator->takenHour[0] == '1')
+					{
+						// Use map to convert taken hour to 24 hour
+						tmpHour = hour10PMto12AM.find(fileRecordListIterator->takenHour[1])->second;
+					}
+
+					//fileRecordListIterator->takenHour = tmpHour;
+					tmpHour.copy(fileRecordListIterator->takenHour, tmpHour.length(), 0);
 				}
 
-				else if (fileRecordListIterator->takenHour[0] == '1')
-				{
-					switch (fileRecordListIterator->takenHour[1]) {
-					case ('0'):
-						fileRecordListIterator->takenHour[0] = '2';
-						fileRecordListIterator->takenHour[1] = '2';
-						break;
-					case ('1'):
-						fileRecordListIterator->takenHour[0] = '2';
-						fileRecordListIterator->takenHour[1] = '3';
-						break;
-					case ('2'):
-						fileRecordListIterator->takenHour[0] = '0';
-						fileRecordListIterator->takenHour[1] = '0';
-						break;
-					}
+				// Convert 12 am to 24-hour
+				// All other AM times remain unchanged.
+				else if ((fileRecordListIterator->takenHour[0] == '1') && (fileRecordListIterator->takenHour[0] == '2')) {
+					// 12 AM must be converted to 00 hour
+					tmpHour = "00";
+					tmpHour.copy(fileRecordListIterator->takenHour, tmpHour.length(), 0);
 				}
+
 			}
 
 		}

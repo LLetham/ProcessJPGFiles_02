@@ -19,6 +19,7 @@
 #include "ProcessFilesInDir.h"
 
 
+#define DEBUG_directory 0
 
 #define DEBUG_PrintFilePath 0
 #define DEBUG_outputDateTakenInfo 0
@@ -55,9 +56,13 @@ int main()
 
     std::filesystem::path directoryPath = fs::current_path();
 
+#if DEBUG_directory == 1
+
     // add subdirectory during testing only
     // remove this subdirector for the release version.
     directoryPath += "\\oliver";      // alternate way: directoryPath = directoryPath / "oliver";
+#endif
+
     std::cout << "Searching for jpg and json files in directoryPath " << directoryPath << std::endl;
 
     for (const auto& entry : fs::directory_iterator(directoryPath)) {

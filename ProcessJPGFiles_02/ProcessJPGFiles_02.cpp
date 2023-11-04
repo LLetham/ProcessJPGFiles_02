@@ -21,6 +21,9 @@
 
 
 #define DEBUG_PrintFilePath 0
+#define DEBUG_outputDateTakenInfo 0
+#define DEBUG_outputFileInfo 0
+
 
 namespace fs = std::filesystem;
 //ProcessExif pe;
@@ -55,7 +58,7 @@ int main()
     // add subdirectory during testing only
     // remove this subdirector for the release version.
     directoryPath += "\\oliver";      // alternate way: directoryPath = directoryPath / "oliver";
-    std::cout << "directoryPath " << directoryPath << std::endl;
+    std::cout << "Searching for jpg and json files in directoryPath " << directoryPath << std::endl;
 
     for (const auto& entry : fs::directory_iterator(directoryPath)) {
 
@@ -79,81 +82,95 @@ int main()
         pfid.storeFileFound(filename);
     }
 
+    cout << "Files in directory processed to find matching jpg and json files" << endl;
+    std::cout << std::endl << "Total number of files in directory: " << numFiles << std::endl << endl;
+
     /*************************************************************/
     // Print out classification results of files found and classified
+#if DEBUG_outputFileInfo == 1
+    cout << "Summary of files found" << endl;
     pfid.outputFileInfo();
+    std::cout << std::endl << "Total number of files in directory: " << numFiles << std::endl << endl;
+#endif
 
-    std::cout << std::endl << "Total number of files in directory: " << numFiles << std::endl;
 
+#if DEBUG_outputDateTakenInfo == 1
+    cout << "DateTaken information retreived from json files" << endl;
     pfid.outputDateTakenInfo();
+#endif
 
     /*************************************************************************************/
     // This is where the jpg files need to be modified to include the json information
-
+    cout << "Transfer json dates to matching jpg files" << endl;
     pfid.xferDateTimeToJPG();
-    cout << "JPG file processing is complete" << endl;
+    cout << "Trasfer complete" << endl << endl;
+
+    // Verify that the json dates were actually written to the jpg files
+    cout << "Verify json dates written into the jpg files" << endl;
+    pfid.verify9003DateTimeInJPG();
+    cout << "Verification complete" << endl << endl;
 
 
-     // Open input file
-     // 
-     // 
-    string jpgIFileName = "test_hour_01_fixed.jpg";
-    //string jpgIFileName = "test_hour_12.jpg";
-    //string jpgIFileName = "test_hour_11_fixed.jpg";
-    //string jpgIFileName = "test_hour_10_fixed.jpg";
-    //string jpgIFileName = "test_hour_09_fixed.jpg";
-    //string jpgIFileName = "test_hour_08_fixed.jpg";
-    //string jpgIFileName = "test_hour_07_fixed.jpg";
-    //string jpgIFileName = "test_hour_06_fixed.jpg";
-    //string jpgIFileName = "test_hour_05_fixed.jpg";
-    //string jpgIFileName = "test_hour_04_fixed.jpg";
-    //string jpgIFileName = "5BD95E56-046C-4770-B917-16D1AB24D51B-38175-000_fixed.jpg";
-    //string jpgIFileName = "4F20D0F2-C937-4BE3-BAF3-B94F0D76B43E-2333-0000_fixed.jpg";
-    //string jpgIFileName = "2019-02-22(4)_fixed.jpg";
-    //string jpgIFileName = "IMG_2889_fixed.jpg";
-    //string jpgIFileName = "0C875ED2-3BE3-4312-9930-208718EA62B3-18664-000_fixed.jpg";
+    // // Open input file
+    // // 
+    // // 
+    //string jpgIFileName = "test_hour_01_fixed.jpg";
+    ////string jpgIFileName = "test_hour_12.jpg";
+    ////string jpgIFileName = "test_hour_11_fixed.jpg";
+    ////string jpgIFileName = "test_hour_10_fixed.jpg";
+    ////string jpgIFileName = "test_hour_09_fixed.jpg";
+    ////string jpgIFileName = "test_hour_08_fixed.jpg";
+    ////string jpgIFileName = "test_hour_07_fixed.jpg";
+    ////string jpgIFileName = "test_hour_06_fixed.jpg";
+    ////string jpgIFileName = "test_hour_05_fixed.jpg";
+    ////string jpgIFileName = "test_hour_04_fixed.jpg";
+    ////string jpgIFileName = "5BD95E56-046C-4770-B917-16D1AB24D51B-38175-000_fixed.jpg";
+    ////string jpgIFileName = "4F20D0F2-C937-4BE3-BAF3-B94F0D76B43E-2333-0000_fixed.jpg";
+    ////string jpgIFileName = "2019-02-22(4)_fixed.jpg";
+    ////string jpgIFileName = "IMG_2889_fixed.jpg";
+    ////string jpgIFileName = "0C875ED2-3BE3-4312-9930-208718EA62B3-18664-000_fixed.jpg";
 
-    
-    basic_ifstream<unsigned char> testInfile;
-    unsigned char* jpgTestBuffer = NULL;
+    //
+    //basic_ifstream<unsigned char> testInfile;
+    //unsigned char* jpgTestBuffer = NULL;
 
-    streamoff lengthTest;
+    //streamoff lengthTest;
 
-    cout << "directory path :\t" << directoryPath << endl;
-    testInfile.open(jpgIFileName, ios::binary);
+    //cout << "directory path :\t" << directoryPath << endl;
+    //testInfile.open(jpgIFileName, ios::binary);
 
-    if (testInfile.is_open()) {
-        cout << "Read file: " << jpgIFileName << "\tfound" << endl;
+    //if (testInfile.is_open()) {
+    //    cout << "Read file: " << jpgIFileName << "\tfound" << endl;
 
-        // Get file size
-        testInfile.seekg(0, ios::end);
-        lengthTest = testInfile.tellg();
-        testInfile.seekg(0, ios::beg);
+    //    // Get file size
+    //    testInfile.seekg(0, ios::end);
+    //    lengthTest = testInfile.tellg();
+    //    testInfile.seekg(0, ios::beg);
 
-        //allocate memory
-        jpgTestBuffer = new unsigned char[lengthTest];
+    //    //allocate memory
+    //    jpgTestBuffer = new unsigned char[lengthTest];
 
-        // move file contents into the buffer
-        testInfile.read(jpgTestBuffer, lengthTest);
+    //    // move file contents into the buffer
+    //    testInfile.read(jpgTestBuffer, lengthTest);
 
-        // close the file
-        testInfile.close();
-    }
-    else {
-        cout << "Read file: " << jpgIFileName << "\t NOT found" << endl;
-    }
+    //    // close the file
+    //    testInfile.close();
+    //}
+    //else {
+    //    cout << "Read file: " << jpgIFileName << "\t NOT found" << endl;
+    //}
 
 
-    // Parse EXIF to see if the date was successfully changed
-    // Disable writing the date before reading the file.
-    easyexif::EXIFInfo resultTest;
-    resultTest.writeData("\0", 0);
+    //// Parse EXIF to see if the date was successfully changed
+    //// Disable writing the date before reading the file.
+    //easyexif::EXIFInfo resultTest;
+    //resultTest.writeData("\0", 0);
 
-    int code = resultTest.parseFrom(jpgTestBuffer, lengthTest);
-    if (code) {
-        printf("Error parsing EXIF: code %d\n", code);
-        return -3;
-    }
+    //int code = resultTest.parseFrom(jpgTestBuffer, lengthTest);
+    //if (code) {
+    //    printf("Error parsing EXIF: code %d\n", code);
+    //    return -3;
+    //}
 
 
     //// Dump EXIF information
@@ -166,9 +183,9 @@ int main()
     //printf("Image description    : %s\n", result.ImageDescription.c_str());
     //printf("Image orientation    : %d\n", result.Orientation);
     //printf("Image copyright      : %s\n", result.Copyright.c_str());
-    printf("Image date/time      : %s\n", resultTest.DateTime.c_str());
-    printf("Original date/time   : %s\n", resultTest.DateTimeOriginal.c_str());
-    printf("Digitize date/time   : %s\n", resultTest.DateTimeDigitized.c_str());
+    //printf("Image date/time      : %s\n", resultTest.DateTime.c_str());
+    //printf("Original date/time   : %s\n", resultTest.DateTimeOriginal.c_str());
+    //printf("Digitize date/time   : %s\n", resultTest.DateTimeDigitized.c_str());
     //printf("Subsecond time       : %s\n", result.SubSecTimeOriginal.c_str());
     //printf("Exposure time        : 1/%d s\n",
     //    (unsigned)(1.0 / result.ExposureTime));
@@ -204,8 +221,8 @@ int main()
     //printf("Focal plane XRes     : %f\n", result.LensInfo.FocalPlaneXResolution);
     //printf("Focal plane YRes     : %f\n", result.LensInfo.FocalPlaneYResolution);
 
-
-    delete[] jpgTestBuffer;
+    // the list also needs to be deleted. Write a function to do that.
+    //delete[] jpgTestBuffer;
 
 
     return 0;

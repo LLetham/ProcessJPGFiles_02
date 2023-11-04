@@ -246,12 +246,12 @@ namespace easyexif {
 //#include <stdio.h>
 //#include <vector>
 #define DEBUG_9003_write 0
-#define DEBUG_9003_write_before 1
-#define DEBUG_9003_write_after 1
+#define DEBUG_9003_write_before 0
+#define DEBUG_9003_write_after 0
 #define DEBUG_9004 0
-#define DEBUG_9004_write_before 1
-#define DEBUG_9004_write_after 1
-#define DEBUG_sections 1
+#define DEBUG_9004_write_before 0
+#define DEBUG_9004_write_after 0
+#define DEBUG_sections 0
 
 using std::string;
 
@@ -806,6 +806,17 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 #if DEBUG_sections == 1
             printf("tag: %x\n", result.tag());
 #endif
+#if DEBUG_9003_write_before == 1
+            printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+            std::cout << std::endl;
+#endif
+
+            easyexif::EXIFInfo::writeXBytes(buf, tiff_header_start + result.data(), 20);
+
+#if DEBUG_9003_write_after == 1
+            printXBytes(buf, tiff_header_start + result.data(), 0x5f);
+#endif
+
             if (result.format() == 2) this->DateTime = result.val_string();
             break;
 

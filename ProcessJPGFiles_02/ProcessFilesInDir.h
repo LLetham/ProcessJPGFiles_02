@@ -15,7 +15,11 @@
 
 #define DEBUG_processJSON 0
 #define DEBUG_processDATE 0
-#define DEBUG_processJPGFiles 1
+#define DEBUG_processJPGFiles 0
+#define DEBUG_verifyJPGFiles 0
+#define DEBUG_outputDateTakenInfo 0
+#define DEBUG_xferDateTimeToJPG 0
+#define DEBUG_verify9003DateTimeInJPG 0
 
 
 using namespace std;
@@ -184,21 +188,25 @@ public:
 		fileRecordListIterator = fileRecordList.begin();
 		numMatchedJPG = 0;
 
+#if DEBUG_outputDateTakenInfo == 1
 		std::cout << std::endl << "Matching .jpg and .json files" << std::endl;
+#endif
 		while (fileRecordListIterator != fileRecordList.end()) {
 			if ((fileRecordListIterator->typeJPGFound == 1) &&
 				(fileRecordListIterator->typeJSONFound == 1) &&
 				(fileRecordListIterator->typePNGFound == 0) &&
 				(fileRecordListIterator->typeOtherFound == 0)) {
 
+#if DEBUG_outputDateTakenInfo == 1
 				std::cout << "dateTaken: " << fileRecordListIterator->dateTaken << "\t" << fileRecordListIterator->stemName << std::endl;
+#endif
 
 				numMatchedJPG++;
 			}
 
 			fileRecordListIterator++;
 		}
-		numMatchedJPG = numMatchedJPG;
+
 		std::cout << "Number of records = " << numMatchedJPG << std::endl;
 
 	}
@@ -712,11 +720,13 @@ public:
 				// Then create an output file that has the same stem as the jpg file but that appends "_fixed.jpg".
 				// Writ the modified buffer into the output file. 
 				jpgIFileName = fileRecordListIterator->fullPathFile;
+#if DEBUG_xferDateTimeToJPG == 1
 				cout << "dateTaken: " << fileRecordListIterator->dateTaken << "\t" << fileRecordListIterator->stemName << ".jpg" << endl;
+#endif
 				infileJPG.open(jpgIFileName, ios::binary);
 
 				if (infileJPG.is_open()) {
-#if DEBUG_processJPGFiles
+#if DEBUG_xferDateTimeToJPG == 1
 					cout << "Read file: " << jpgIFileName << "\tfound" << endl;
 #endif
 
@@ -758,7 +768,7 @@ public:
 				bool outFileOpen = false;
 				outfileJPG.open(jpgOFileName, ios::binary);
 				if (outfileJPG.is_open()) {
-#if DEBUG_processJPGFiles
+#if DEBUG_xferDateTimeToJPG == 1
 					cout << "Write file: " << jpgOFileName << "\tfound" << endl;
 #endif
 
@@ -774,7 +784,7 @@ public:
 				    cout << jpgOFileName << "\tdoes NOT exist" << endl;
 				}
 
-#if DEBUG_processJPGFiles
+#if DEBUG_xferDateTimeToJPG == 1
 				std::cout << "\t" << fileRecordListIterator->stemName << ".jpg processed" << std::endl;
 #endif
 				numMatchedJPG++;
@@ -783,9 +793,103 @@ public:
 			fileRecordListIterator++;
 		}
 
+		std::cout << "Number of jpg files written with json date and time = " << numMatchedJPG << std::endl;
+
+	}
+
+	//***********************************************************************************//
+	// Access each *_fixed.jpg file to determine whether the date and time written to the tag 9003
+	// is the same as the date and time extracted from the json file.
+	void verify9003DateTimeInJPG() {
+
+		fileRecordListIterator = fileRecordList.begin();
+		int wrongJPGFiles = 0;
+		int rightJPGFiles = 0;
+		numMatchedJPG = 0;
+
+		while (fileRecordListIterator != fileRecordList.end()) {
+			// Search for records that have matching jpg and json files and that have
+			// the date and time extracted from the json, formed into a string and stored
+			// in dateTaken.
+			if ((fileRecordListIterator->typeJPGFound == 1) &&
+				(fileRecordListIterator->typeJSONFound == 1) &&
+				(fileRecordListIterator->typePNGFound == 0) &&
+				(fileRecordListIterator->typeOtherFound == 0))
+			{
+				// Open *_fixed.jpg file, use easyexif to get the DateTimeOriginal (e.g., 9003) value from the file,
+				// compare the value from the file to the value in the list.
+				jpgIFileName = fileRecordListIterator->stemName;
+				jpgIFileName.append("_fixed.jpg");
+#if DEBUG_verify9003DateTimeInJPG == 1
+				== 1
+				cout << "dateTaken: " << fileRecordListIterator->dateTaken << "\t" << fileRecordListIterator->stemName << ".jpg" << endl;
+#endif
+				infileJPG.open(jpgIFileName, ios::binary);
+
+				if (infileJPG.is_open()) {
+#if DEBUG_verify9003DateTimeInJPG == 1
+					cout << "Read file: " << jpgIFileName << "\tfound" << endl;
+#endif
+
+					// Get file size
+					infileJPG.seekg(0, ios::end);
+					length = infileJPG.tellg();
+					infileJPG.seekg(0, ios::beg);
+
+					//allocate memory
+					jpgBuffer = new unsigned char[length];
+
+					// move file contents into the buffer
+					infileJPG.read(jpgBuffer, length);
+
+					// close the file
+					infileJPG.close();
+				}
+				else {
+					cout << "Read file: " << jpgIFileName << "\t NOT found" << endl;
+				}
+
+				// Parse the jpg file to access the EXIF metadata
+				// parsing from the jpgBuffer also changes the date in the Buffer at TagID 0x9003 to the
+				// dateTaken provided from the json file. When this section of code is executed, the buffer 
+				// holds the entire jpg file with the new dataTaken.
+				easyexif::EXIFInfo result;
+				result.writeData(fileRecordListIterator->dateTaken, 0);
+				int code = result.parseFrom(jpgBuffer, length);
+				if (code) {
+					printf("Error parsing EXIF: code %d\n", code);
+				}
+
+				// Compare strings
+				string tmpStr = result.DateTimeOriginal.c_str();
+				if (tmpStr.compare(fileRecordListIterator->dateTaken) == 1) {
+					// strings do not match
+#if DEBUG_verify9003DateTimeInJPG == 1
+					std::cout << "Error\tFile = " << jpgIFileName << "\tDT expected: " << fileRecordListIterator->dateTaken << "\t DT in JPG: " << tmpStr << endl;
+#endif
+					wrongJPGFiles++;
+				}
+				else {
+					// strings match
+#if DEBUG_verify9003DateTimeInJPG == 1
+					std::cout << "Match\tFile = " << jpgIFileName << "\tDT expected: " << fileRecordListIterator->dateTaken << "\t DT in JPG: " << tmpStr << endl;
+#endif
+					rightJPGFiles++;
+
+				}
+
+				numMatchedJPG++;
+			}
+
+			fileRecordListIterator++;
+		}
+
+		cout << "Number of jpg files with the expected date: " << rightJPGFiles << endl;
+		cout << "Number of jpg files with the wrong date: " << wrongJPGFiles << endl;
 		std::cout << "Number of jpg files processed = " << numMatchedJPG << std::endl;
 
 	}
+
 
 
 

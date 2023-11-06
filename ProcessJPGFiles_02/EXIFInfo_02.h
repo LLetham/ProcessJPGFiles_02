@@ -806,17 +806,6 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
 #if DEBUG_sections == 1
             printf("tag: %x\n", result.tag());
 #endif
-#if DEBUG_9003_write_before == 1
-            printXBytes(buf, tiff_header_start + result.data(), 0x5f);
-            std::cout << std::endl;
-#endif
-
-            easyexif::EXIFInfo::writeXBytes(buf, tiff_header_start + result.data(), 20);
-
-#if DEBUG_9003_write_after == 1
-            printXBytes(buf, tiff_header_start + result.data(), 0x5f);
-#endif
-
             if (result.format() == 2) this->DateTime = result.val_string();
             break;
 
@@ -898,28 +887,6 @@ int easyexif::EXIFInfo::parseFromEXIFSegment(unsigned char* buf, std::streamoff 
                 printf("tag: %x\n", result.tag());
 #endif
 
-#if DEBUG_9003_write == 1
-                // By the time execution gets here, the start of buf has been moved from the start of 
-                // the jpg file to the start of the start of the 'Exif\0\0'. 
-                // The offset to the data for the date and time is:
-                //      tiff_header_start + result.data()
-                // result.data is the data portion of the 12-byte exif entry, but since the data does
-                // not fit into 12 bytes, the data in the 4-byte data is the offset to where the data
-                // is actually stored.
-                // I have no idea what offs is pointing to.
-                printf("tag:\t%X\n", result.tag());
-                printf("format:\t%X\n", result.format());
-                printf("length\t%X\n", result.length());
-                printf("data:\t%X\n", result.data());
-
-                printXBytes(buf, 0, 0x1f);
-                std::cout << std::endl;
-                printXBytes(buf, offs, 0x1f);
-                std::cout << std::endl;
-                //printXBytes(buf, offs + tiff_header_start + result.data(), 0x5f);
-                printXBytes(buf, tiff_header_start + result.data(), 0x5f);
-                std::cout << std::endl;
-#endif
 #if DEBUG_9003_write_before == 1
                 printXBytes(buf, tiff_header_start + result.data(), 0x5f);
                 std::cout << std::endl;

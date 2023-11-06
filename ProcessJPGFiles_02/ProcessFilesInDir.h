@@ -51,7 +51,7 @@ struct FileInfoRecord {
 	int typeJSONFound = 0;			// A file with a .json extension found for the stem.
 	int typePNGFound = 0;			// File is .png file
 	int typeOtherFound = 0;			// File is non-jpg or non-json file
-	char* fullPathOther = NULL;	// full path of non-jpg and/or non-json file with extension
+	char* fullPathOther = NULL;		// full path of non-jpg and/or non-json file with extension
 	char takenMonth[4] = { NULL };
 	char takenDay[3] = { NULL };
 	char takenYear[5] = { NULL };
@@ -369,8 +369,6 @@ public:
 		std::cout << "Same Stem files = " << numTrio << std::endl;
 
 
-
-
 		/*********************************************/
 		// summary
 		std::cout << std::endl;
@@ -398,7 +396,6 @@ public:
 	/******************************************************************************/
 	// get date information from json file and put into the fileRecordListIterator->
 	// node of the linked list.
-	// Get data out of json and into node of list.
 	// Format in json:
 	//			"formatted": "Mar 2, 2018, 1:10:08 AM UTC"
 	//			"formatted": "Feb 27, 2018, 6:04:25 PM UTC"
@@ -504,7 +501,7 @@ public:
 
 				tmpStr = fLine.substr(i, fLine.length());
 
-				// Convert time to 24-hour time
+				// Use map data structure to convert 12-hour time from json to 24-hour time for jpg file.
 				// See if AM or PM
 				tmpHour = '\0';
 
@@ -544,6 +541,8 @@ public:
 		//		YYYY:MM:DD HH:MM:SS\0
 		// 
 		// Store the date time string in dateTaken of the FileInfoRecord structure. 
+		// This string is later written the 0x9003 and 0x9004 tag areas of the exif structure in
+		// a jpg file.
 		if (photoTakenTimeFound == true) {
 			// Convert month in FileInfoRecord to an ascii number
 			tmpMonth.clear();
@@ -578,6 +577,7 @@ public:
 	// outfilename: is the .path() portion of the stat structure for accessing file names
 	// A file has been found in the directory. Save the information regarding the file in the
 	// linked list.
+	// Identify file extension type (e.g., jpg, json, png) and matching file stems.
 	void storeFileFound(std::filesystem::path outfilename) {
 		// get the file name with the extension and the full path
 		fullFilePathName = outfilename.string();
@@ -698,8 +698,9 @@ public:
 
 
 	//***********************************************************************************//
-	// Process jpg files that have a matching json file. Put the date from the json file
-	// into the jpg file as the DateTimeOriginal.
+	// Process the linked list to find jpg files that have a matching json file. Put the 
+	// date from the json file that is stored in the linked list into the jpg file as the 
+	// DateTimeOriginal (e.g., tag 0x9003 and tag 0x9004).
 	void xferDateTimeToJPG() {
 
 		fileRecordListIterator = fileRecordList.begin();
@@ -729,7 +730,6 @@ public:
 #if DEBUG_xferDateTimeToJPG == 1
 					cout << "Read file: " << jpgIFileName << "\tfound" << endl;
 #endif
-
 					// Get file size
 					infileJPG.seekg(0, ios::end);
 					length = infileJPG.tellg();
@@ -748,8 +748,8 @@ public:
 					cout << "Read file: " << jpgIFileName << "\t NOT found" << endl;
 				}
 
-				// Parse the jpg file to access the EXIF metadata
-				// parsing from the jpgBuffer also changes the date in the Buffer at TagID 0x9003 to the
+				// Parse the jpg file to access the EXIF metadata.
+				// Parsing from the jpgBuffer also changes the date in the Buffer at TagID 0x9003 to the
 				// dateTaken provided from the json file. When this section of code is executed, the buffer 
 				// holds the entire jpg file with the new dataTaken.
 				easyexif::EXIFInfo result;
@@ -771,7 +771,6 @@ public:
 #if DEBUG_xferDateTimeToJPG == 1
 					cout << "Write file: " << jpgOFileName << "\tfound" << endl;
 #endif
-
 					outfileJPG.write(jpgBuffer, length);
 					
 					// close the file
@@ -794,12 +793,11 @@ public:
 		}
 
 		std::cout << "Number of jpg files written with json date and time = " << numMatchedJPG << std::endl;
-
 	}
 
 	//***********************************************************************************//
 	// Access each *_fixed.jpg file to determine whether the date and time written to the tag 9003
-	// is the same as the date and time extracted from the json file.
+	// is the same as the date and time extracted from the json file and stored in the linked list.
 	void verify9003DateTimeInJPG() {
 
 		fileRecordListIterator = fileRecordList.begin();
@@ -879,7 +877,9 @@ public:
 				}
 
 				numMatchedJPG++;
+				delete[] jpgBuffer;
 			}
+
 
 			fileRecordListIterator++;
 		}

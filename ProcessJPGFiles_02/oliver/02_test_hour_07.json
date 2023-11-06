@@ -1,0 +1,40 @@
+{
+  "title": "IMG_7164.JPG",
+  "description": "",
+  "imageViews": "3",
+  "creationTime": {
+    "timestamp": "1568935896",
+    "formatted": "Sep 19, 2019, 11:31:36 PM UTC"
+  },
+  "photoTakenTime": {
+    "timestamp": "1568935873",
+    "formatted": "Aug 30, 2019, 7:31:13 PM UTC"
+  },
+  "geoData": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "geoDataExif": {
+    "latitude": 0.0,
+    "longitude": 0.0,
+    "altitude": 0.0,
+    "latitudeSpan": 0.0,
+    "longitudeSpan": 0.0
+  },
+  "people": [{
+    "name": "Olivia"
+  }],
+  "url": "https://lh3.googleusercontent.com/AwWcrgs8W3U56izfCja18LRHYRr2HkaVRsm75ycb7-Idqh0Qt01mqZ_GppbH4B2QGMSkMqUrYjBOta2GtlSuH5BSAQHxpvbTZOzl3bI_",
+  "googlePhotosOrigin": {
+    "mobileUpload": {
+      "deviceType": "IOS_PHONE"
+    }
+  },
+  "photoLastModifiedTime": {
+    "timestamp": "1660476761",
+    "formatted": "Aug 14, 2022, 11:32:41 AM UTC"
+  }
+}
